@@ -1,7 +1,7 @@
 "use client";
 
 import { JobStatus } from "@/lib/types";
-import { CheckCircle2, Loader2, XCircle, Clock } from "lucide-react";
+import { CheckCircle2, Loader2, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface Props {
@@ -44,7 +44,6 @@ export default function TrainingProgress({
         )}
         {isDone && <CheckCircle2 className="w-6 h-6 text-emerald-400" />}
         {isFailed && <XCircle className="w-6 h-6 text-red-400" />}
-        {status === "idle" && <Clock className="w-6 h-6 text-zinc-500" />}
 
         <div>
           <p className="font-semibold text-zinc-100 capitalize">
