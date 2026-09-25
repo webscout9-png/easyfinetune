@@ -1,9 +1,9 @@
 import { ModelOption } from "./types";
 
 /**
- * Curated list of popular open-source models available for fine-tuning.
- * These map to real Together AI model IDs that support fine-tuning.
- * You can expand this list as Together AI adds more models.
+ * Models verified for fine-tuning on Together AI (2026).
+ * Only include models that appear in the official supported models list.
+ * See: https://docs.together.ai/docs/fine-tuning/supported-models
  */
 export const AVAILABLE_MODELS: ModelOption[] = [
   {
@@ -22,39 +22,39 @@ export const AVAILABLE_MODELS: ModelOption[] = [
     togetherId: "meta-llama/Llama-3.2-3B-Instruct",
   },
   {
-    id: "qwen2.5-7b",
-    name: "Qwen 2.5 7B Instruct",
-    params: "7B",
-    description: "Strong multilingual and coding capabilities.",
-    togetherId: "Qwen/Qwen2.5-7B-Instruct",
+    id: "llama-3.3-70b",
+    name: "Llama 3.3 70B Instruct",
+    params: "70B",
+    description: "Highest quality. Higher cost and longer training time.",
+    togetherId: "meta-llama/Llama-3.3-70B-Instruct-Reference",
   },
   {
-    id: "qwen2.5-14b",
-    name: "Qwen 2.5 14B Instruct",
-    params: "14B",
-    description: "Higher quality, still reasonable cost.",
-    togetherId: "Qwen/Qwen2.5-14B-Instruct",
+    id: "mixtral-8x7b",
+    name: "Mixtral 8x7B Instruct",
+    params: "46.7B MoE",
+    description: "Strong MoE model — good quality at efficient cost.",
+    togetherId: "mistralai/Mixtral-8x7B-Instruct-v0.1",
   },
   {
-    id: "mistral-7b",
-    name: "Mistral 7B Instruct v0.3",
-    params: "7B",
-    description: "Reliable and well-supported open model.",
-    togetherId: "mistralai/Mistral-7B-Instruct-v0.3",
-  },
-  {
-    id: "gemma-2-9b",
-    name: "Gemma 2 9B Instruct",
+    id: "qwen3.5-9b",
+    name: "Qwen 3.5 9B",
     params: "9B",
-    description: "Google's strong instruction-following model.",
-    togetherId: "google/gemma-2-9b-it",
+    description: "Modern Qwen model with strong multilingual and coding skills.",
+    togetherId: "Qwen/Qwen3.5-9B",
   },
   {
-    id: "phi-3.5-mini",
-    name: "Phi-3.5 Mini Instruct",
-    params: "3.8B",
-    description: "Very efficient Microsoft model. Good for tight budgets.",
-    togetherId: "microsoft/Phi-3.5-mini-instruct",
+    id: "qwen3.5-4b",
+    name: "Qwen 3.5 4B",
+    params: "4B",
+    description: "Small, fast, and cheap — good for quick experiments.",
+    togetherId: "Qwen/Qwen3.5-4B",
+  },
+  {
+    id: "gemma-3-4b",
+    name: "Gemma 3 4B Instruct",
+    params: "4B",
+    description: "Google's efficient instruction-tuned model.",
+    togetherId: "google/gemma-3-4b-it",
   },
 ];
 
