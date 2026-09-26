@@ -3,8 +3,13 @@ export interface ModelOption {
   name: string;
   params: string;
   description: string;
-  togetherId: string; // actual Together AI model identifier
+  /** Together AI model ID (paid path) */
+  togetherId: string;
+  /** Unsloth / Hugging Face 4-bit model for free Colab */
+  unslothId: string;
   recommended?: boolean;
+  /** Fits free Colab T4 (~15GB). Larger models need Colab Pro. */
+  freeColab?: boolean;
 }
 
 export type JobStatus =
@@ -14,7 +19,8 @@ export type JobStatus =
   | "running"
   | "completed"
   | "failed"
-  | "cancelled";
+  | "cancelled"
+  | "ready"; // notebook ready for Colab
 
 export interface TrainingJob {
   id: string;
