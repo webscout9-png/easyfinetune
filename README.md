@@ -1,36 +1,48 @@
 # EasyFineTune
 
-**One-click open-source LLM fine-tuning.**
+**One-click free fine-tuning for open-source LLMs.**
 
 Upload a dataset → pick a model → click **Train**.  
-No scripts, no GPU management, no complexity.
+Training runs on **Google’s free Colab GPU** via Unsloth. Your laptop is never used.
+
+---
+
+## How it works
+
+### Free path (default — no API key)
+
+1. Upload JSONL dataset  
+2. Choose a model (3B–9B, all fit free Colab T4)  
+3. Click **Train for Free**  
+4. Download the generated Unsloth notebook  
+5. Open [Google Colab](https://colab.research.google.com) → Upload notebook → Runtime → **T4 GPU** → **Run all**  
+6. Download the `lora_model` folder when training finishes  
+
+**Cost: $0.** Hardware used: Google’s free T4 only.
+
+### Paid path (optional)
+
+Paste a [Together AI](https://api.together.xyz) API key before clicking Train.  
+Job runs fully managed on Together’s infrastructure.
 
 ---
 
 ## Features
 
-- Clean modern UI (Next.js + Tailwind)
-- Drag-and-drop dataset upload with automatic validation
-- Support for both `messages` (chat) and `prompt`/`completion` formats
-- Curated list of popular open-source models (Llama 3.1, Qwen 2.5, Mistral, Gemma, Phi…)
-- Real training via **Together AI** Fine-Tuning API
-- Full **demo mode** (no API key required) so you can test the entire flow
-- Live progress tracking
-- Advanced settings (epochs, learning rate)
-- Ready for Vercel deployment
+- Same simple UI for free and paid paths  
+- Dataset validation + auto-normalize to chat `messages` format  
+- Unsloth-optimized models that fit free Colab T4  
+- Ready-to-run `.ipynb` with your data embedded  
+- Optional Together AI managed fine-tuning  
+- Deployable on Vercel  
 
 ---
 
 ## Quick Start (Local)
 
 ```bash
-# 1. Clone / enter the project
 cd easyfinetune
-
-# 2. Install dependencies
 npm install
-
-# 3. Run development server
 npm run dev
 ```
 
@@ -38,106 +50,44 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ---
 
-## Deploy to Vercel
+## Deploy on Vercel
 
-1. Go to [vercel.com](https://vercel.com) → **Add New Project**.
-2. Import this GitHub repository (`webscout9-png/easyfinetune`).
-3. Click **Deploy** (no environment variables required for demo mode).
-
-Optional: add a server-side `TOGETHER_API_KEY` later if you want to hide the key from users.
+1. Push this repo to GitHub  
+2. Import in [Vercel](https://vercel.com)  
+3. Deploy (no env vars required for free Colab path)  
 
 ---
 
-## How Training Works
+## Dataset format
 
-### Demo Mode (default)
-Leave the API key empty. The app simulates a realistic training run so you can experience the full UI flow.
+**JSONL** — one example per line.
 
-### Real Mode
-1. Create a free account at [api.together.xyz](https://api.together.xyz)
-2. Copy your API key
-3. Paste it in the UI
-4. Upload a dataset and click **Start Fine-Tuning**
+Chat format (preferred):
 
-The backend:
-- Validates & normalizes your dataset
-- Uploads it to Together AI
-- Starts a LoRA fine-tuning job
-- Polls status until completion
-- Returns the fine-tuned model identifier
-
----
-
-## Dataset Format
-
-**Preferred (chat format):**
 ```json
-{"messages": [{"role": "system", "content": "You are a helpful assistant."}, {"role": "user", "content": "Hello"}, {"role": "assistant", "content": "Hi there!"}]}
-{"messages": [{"role": "user", "content": "What is 2+2?"}, {"role": "assistant", "content": "4"}]}
+{"messages":[{"role":"user","content":"Hello"},{"role":"assistant","content":"Hi there!"}]}
 ```
 
-**Also supported:**
+Or prompt/completion:
+
 ```json
-{"prompt": "What is the capital of France?", "completion": "Paris"}
-```
-
-Save as `.jsonl` (one JSON object per line).
-
-Recommended: **200–2000 high-quality examples**.
-
----
-
-## Project Structure
-
-```
-easyfinetune/
-├── src/
-│   ├── app/
-│   │   ├── api/
-│   │   │   ├── models/route.ts
-│   │   │   ├── validate/route.ts
-│   │   │   ├── train/route.ts
-│   │   │   └── status/[jobId]/route.ts
-│   │   ├── layout.tsx
-│   │   ├── page.tsx
-│   │   └── globals.css
-│   ├── components/
-│   │   ├── FileUpload.tsx
-│   │   ├── ModelSelector.tsx
-│   │   └── TrainingProgress.tsx
-│   └── lib/
-│       ├── types.ts
-│       ├── models.ts
-│       ├── dataset.ts
-│       └── utils.ts
-├── package.json
-├── README.md
-└── ...
+{"prompt":"Hello","completion":"Hi there!"}
 ```
 
 ---
 
-## Extending the Tool
+## Models (free Colab)
 
-### Add more models
-Edit `src/lib/models.ts` and add entries that exist on Together AI.
-
-### Switch to self-hosted training (Unsloth + RunPod)
-Replace the Together AI calls inside `src/app/api/train/route.ts` with a job that:
-1. Uploads the dataset to object storage
-2. Spins up a RunPod pod with the Unsloth Docker image
-3. Runs the training command
-4. Downloads the resulting adapter
-
-### Hide the API key
-Move the Together API key to an environment variable (`TOGETHER_API_KEY`) and never send it from the client.
+| Model | Size | Fits free T4 |
+|-------|------|--------------|
+| Llama 3.2 1B / 3B | 1–3B | Yes |
+| Llama 3.1 8B | 8B | Yes (Unsloth 4-bit) |
+| Qwen 2.5 7B | 7B | Yes |
+| Gemma 2 9B | 9B | Tight, short context |
+| Phi-3.5 Mini | 3.8B | Yes |
 
 ---
 
 ## License
 
-MIT — free to use, modify, and commercialize.
-
----
-
-Built for people who want fine-tuning to feel as simple as uploading a file.
+MIT
