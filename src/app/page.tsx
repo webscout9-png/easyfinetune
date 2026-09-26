@@ -12,12 +12,12 @@ export default function HomePage() {
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<DatasetPreview | null>(null);
   const [selectedModelId, setSelectedModelId] = useState<string | null>(
-    "llama-3.1-8b"
+    "llama-3.2-3b"
   );
   const [apiKey, setApiKey] = useState("");
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [epochs, setEpochs] = useState(1);
-  const [learningRate, setLearningRate] = useState(0.00001);
+  const [learningRate, setLearningRate] = useState(0.0002);
 
   const [jobId, setJobId] = useState<string | null>(null);
   const [status, setStatus] = useState<JobStatus>("idle");
@@ -26,6 +26,8 @@ export default function HomePage() {
   const [outputModel, setOutputModel] = useState<string | undefined>();
   const [error, setError] = useState<string | undefined>();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [mode, setMode] = useState<"colab" | "together" | "demo" | undefined>();
+  const [notebook, setNotebook] = useState<string | undefined>();
 
   const models: ModelOption[] = AVAILABLE_MODELS;
 
@@ -44,7 +46,8 @@ export default function HomePage() {
   }, []);
 
   useEffect(() => {
-    if (!jobId || status === "completed" || status === "failed") return;
+    if (!jobId || mode === "colab" || status === "completed" || status === "failed" || status === "ready")
+      return;
 
     const interval = setInterval(async () => {
       try {
@@ -71,7 +74,7 @@ export default function HomePage() {
     }, 3000);
 
     return () => clearInterval(interval);
-  }, [jobId, status, apiKey]);
+  }, [jobId, status, apiKey, mode]);
 
   const startTraining = async () => {
     if (!file || !selectedModelId) return;
@@ -79,9 +82,11 @@ export default function HomePage() {
     setIsSubmitting(true);
     setStatus("uploading");
     setProgress(5);
-    setMessage("Uploading dataset and creating job…");
+    setMessage("Preparing your free training notebook…");
     setError(undefined);
     setOutputModel(undefined);
+    setNotebook(undefined);
+    setMode(undefined);
 
     try {
       const form = new FormData();
@@ -103,9 +108,17 @@ export default function HomePage() {
       }
 
       setJobId(data.jobId);
-      setStatus("queued");
-      setMessage(data.message || "Job submitted");
-      setProgress(10);
+      setMode(data.mode);
+      setMessage(data.message || "Ready");
+
+      if (data.mode === "colab") {
+        setStatus("ready");
+        setNotebook(data.notebook);
+        setProgress(100);
+      } else {
+        setStatus("queued");
+        setProgress(10);
+      }
     } catch (err: any) {
       setStatus("failed");
       setError(err.message);
@@ -113,6 +126,8 @@ export default function HomePage() {
       setIsSubmitting(false);
     }
   };
+
+  const selectedModel = models.find((m) => m.id === selectedModelId);
 
   return (
     <div className="min-h-screen">
@@ -125,7 +140,7 @@ export default function HomePage() {
             <div>
               <h1 className="font-bold text-lg tracking-tight">EasyFineTune</h1>
               <p className="text-[11px] text-zinc-500 -mt-0.5">
-                One-click open-source model fine-tuning
+                Free one-click fine-tuning
               </p>
             </div>
           </div>
@@ -147,11 +162,11 @@ export default function HomePage() {
           <h2 className="text-4xl sm:text-5xl font-bold tracking-tight bg-gradient-to-r from-white to-zinc-400 bg-clip-text text-transparent">
             Fine-tune any open model
             <br />
-            in one click
+            for free
           </h2>
           <p className="text-zinc-400 max-w-2xl mx-auto text-lg">
-            Upload your dataset, pick a model, and hit train. No scripts, no
-            GPU management, no complexity.
+            Upload dataset → pick model → click Train. Runs on Google's free
+            GPU via Unsloth. Nothing uses your laptop.
           </p>
         </section>
 
@@ -163,10 +178,10 @@ export default function HomePage() {
             <h3 className="text-xl font-semibold">Upload your dataset</h3>
           </div>
           <p className="text-sm text-zinc-400 ml-11">
-            JSONL format with either{" "}
+            JSONL with{" "}
             <code className="text-sky-400">messages</code> (chat) or{" "}
             <code className="text-sky-400">prompt</code> +{" "}
-            <code className="text-sky-400">completion</code> fields.
+            <code className="text-sky-400">completion</code>.
           </p>
           <div className="ml-0 sm:ml-11">
             <FileUpload
@@ -183,6 +198,9 @@ export default function HomePage() {
             </span>
             <h3 className="text-xl font-semibold">Choose a model</h3>
           </div>
+          <p className="text-sm text-zinc-400 ml-11">
+            All listed models fit free Google Colab T4 with Unsloth.
+          </p>
           <div className="ml-0 sm:ml-11">
             <ModelSelector
               models={models}
@@ -198,7 +216,9 @@ export default function HomePage() {
             <span className="w-8 h-8 rounded-full bg-sky-500/20 text-sky-400 flex items-center justify-center text-sm font-bold">
               3
             </span>
-            <h3 className="text-xl font-semibold">API Key (optional for demo)</h3>
+            <h3 className="text-xl font-semibold">
+              Optional: Together AI key (paid cloud)
+            </h3>
           </div>
 
           <div className="ml-0 sm:ml-11 space-y-4">
@@ -206,7 +226,7 @@ export default function HomePage() {
               <Key className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
               <input
                 type="password"
-                placeholder="Together AI API key (leave empty for demo mode)"
+                placeholder="Leave empty = free Google Colab (recommended)"
                 value={apiKey}
                 onChange={(e) => setApiKey(e.target.value)}
                 disabled={status === "running" || status === "queued"}
@@ -214,16 +234,17 @@ export default function HomePage() {
               />
             </div>
             <p className="text-xs text-zinc-500">
-              Get a free key at{" "}
+              <strong className="text-zinc-400">Leave empty</strong> for free
+              training on Google Colab + Unsloth (no cost, no local GPU). Paste a{" "}
               <a
                 href="https://api.together.xyz"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-sky-400 hover:underline inline-flex items-center gap-1"
               >
-                api.together.xyz <ExternalLink className="w-3 h-3" />
-              </a>
-              . Without a key the app runs in full demo mode so you can test the UI.
+                Together AI key <ExternalLink className="w-3 h-3" />
+              </a>{" "}
+              only if you want fully managed paid training.
             </p>
 
             <button
@@ -243,7 +264,7 @@ export default function HomePage() {
                   <input
                     type="number"
                     min={1}
-                    max={10}
+                    max={5}
                     value={epochs}
                     onChange={(e) => setEpochs(Number(e.target.value))}
                     className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-sky-500"
@@ -255,7 +276,7 @@ export default function HomePage() {
                   </label>
                   <input
                     type="number"
-                    step="0.000001"
+                    step="0.00001"
                     value={learningRate}
                     onChange={(e) => setLearningRate(Number(e.target.value))}
                     className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-sky-500"
@@ -283,12 +304,12 @@ export default function HomePage() {
             {isSubmitting || status === "uploading" ? (
               <>
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                Starting…
+                Preparing…
               </>
             ) : (
               <>
                 <Rocket className="w-5 h-5" />
-                Start Fine-Tuning
+                {apiKey ? "Start Fine-Tuning" : "Train for Free"}
               </>
             )}
           </button>
@@ -303,25 +324,31 @@ export default function HomePage() {
               outputModel={outputModel}
               error={error}
               jobId={jobId || undefined}
+              mode={mode}
+              notebook={notebook}
+              modelName={selectedModel?.name}
             />
           </section>
         )}
 
         <section className="pt-8 border-t border-zinc-800/60">
           <div className="rounded-2xl bg-zinc-900/40 border border-zinc-800 p-6 text-sm text-zinc-400 space-y-2">
-            <p className="font-medium text-zinc-200">How it works</p>
+            <p className="font-medium text-zinc-200">How free training works</p>
             <ul className="list-disc list-inside space-y-1">
               <li>
-                Your dataset is validated and normalized to the standard chat format.
+                You upload a dataset and pick a model — same simple flow.
               </li>
               <li>
-                Training runs on Together AI’s infrastructure (or simulated in demo mode).
+                We generate a ready Unsloth notebook with your data embedded.
               </li>
               <li>
-                You receive a fine-tuned model identifier you can deploy immediately.
+                You open it in Google Colab → select free T4 GPU → Run all.
               </li>
               <li>
-                For fully private / self-hosted training you can later swap the backend to Unsloth + RunPod.
+                Training uses Google's free GPU. Your device is not used.
+              </li>
+              <li>
+                When done, download the LoRA adapter from Colab's file panel.
               </li>
             </ul>
           </div>
@@ -329,7 +356,7 @@ export default function HomePage() {
       </main>
 
       <footer className="border-t border-zinc-800/60 py-8 text-center text-xs text-zinc-600">
-        Built with Next.js · Powered by Together AI · Open source ready
+        Built with Next.js · Free path: Google Colab + Unsloth · Optional: Together AI
       </footer>
     </div>
   );
