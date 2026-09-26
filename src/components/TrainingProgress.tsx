@@ -1,7 +1,13 @@
 "use client";
 
 import { JobStatus } from "@/lib/types";
-import { CheckCircle2, Loader2, XCircle, Download, ExternalLink } from "lucide-react";
+import {
+  CheckCircle2,
+  Loader2,
+  XCircle,
+  Download,
+  ExternalLink,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface Props {
@@ -69,13 +75,13 @@ export default function TrainingProgress({
         <div>
           <p className="font-semibold text-zinc-100">
             {status === "uploading"
-              ? "Preparing…"
+              ? "Preparing your notebook…"
               : status === "queued"
               ? "Queued"
               : status === "running"
               ? "Training in progress"
               : status === "ready"
-              ? "Free notebook ready!"
+              ? "Your free training notebook is ready"
               : status === "completed"
               ? "Training complete!"
               : status}
@@ -109,32 +115,49 @@ export default function TrainingProgress({
       )}
 
       {isReady && mode === "colab" && notebook && (
-        <div className="space-y-4 pt-2 border-t border-zinc-800">
-          <ol className="text-sm text-zinc-300 space-y-2 list-decimal list-inside">
-            <li>Download the notebook below</li>
-            <li>
-              Open{" "}
-              <a
-                href="https://colab.research.google.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-sky-400 hover:underline inline-flex items-center gap-1"
-              >
-                Google Colab <ExternalLink className="w-3 h-3" />
-              </a>
-            </li>
-            <li>File → Upload notebook → select the downloaded file</li>
-            <li>
-              Runtime → Change runtime type → <strong>T4 GPU</strong>
-            </li>
-            <li>
-              Runtime → <strong>Run all</strong>
-            </li>
-            <li>
-              When finished, download the{" "}
-              <code className="text-sky-300">lora_model</code> folder from the left sidebar
-            </li>
-          </ol>
+        <div className="space-y-6 pt-2 border-t border-zinc-800">
+          <div>
+            <p className="text-sm font-medium text-emerald-300 mb-3">
+              Do these steps exactly (for beginners)
+            </p>
+            <ol className="text-sm text-zinc-300 space-y-3 list-decimal list-inside">
+              <li>
+                Click <strong className="text-white">Download Notebook</strong>{" "}
+                below — save the .ipynb file.
+              </li>
+              <li>
+                Open{" "}
+                <a
+                  href="https://colab.research.google.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sky-400 hover:underline inline-flex items-center gap-1"
+                >
+                  Google Colab <ExternalLink className="w-3 h-3" />
+                </a>{" "}
+                (free Google account).
+              </li>
+              <li>
+                In Colab: <strong className="text-white">File → Upload notebook</strong>{" "}
+                → choose the file you downloaded.
+              </li>
+              <li>
+                <strong className="text-white">
+                  Runtime → Change runtime type → T4 GPU
+                </strong>{" "}
+                → Save. (Must say GPU, not CPU.)
+              </li>
+              <li>
+                <strong className="text-white">Runtime → Run all</strong> and wait.
+                Keep the tab open (10–40 min).
+              </li>
+              <li>
+                When done, open the <strong className="text-white">Files</strong>{" "}
+                panel (folder icon on the left). Download{" "}
+                <code className="text-sky-300">lora_model.zip</code>.
+              </li>
+            </ol>
+          </div>
 
           <div className="flex flex-wrap gap-3">
             <button
@@ -155,10 +178,36 @@ export default function TrainingProgress({
             </a>
           </div>
 
-          <p className="text-xs text-zinc-500">
-            Training runs 100% on Google&apos;s free GPU. Your laptop is not used.
-            Typical time: 10–40 minutes depending on dataset size.
-          </p>
+          <div className="rounded-xl bg-zinc-950/80 border border-zinc-700 p-4 space-y-3 text-sm text-zinc-300">
+            <p className="font-medium text-zinc-100">
+              After training — how to use / send your model
+            </p>
+            <ul className="space-y-2 list-disc list-inside text-zinc-400">
+              <li>
+                <strong className="text-zinc-200">Your result file</strong> is{" "}
+                <code className="text-sky-300">lora_model.zip</code>. That is the
+                fine-tuned model. Save it somewhere safe.
+              </li>
+              <li>
+                <strong className="text-zinc-200">Test it in Colab:</strong> the
+                notebook has a “Test your model” cell — run it to chat right away.
+              </li>
+              <li>
+                <strong className="text-zinc-200">Send to someone:</strong> send
+                them the zip + the base model name shown in the notebook. Or upload
+                to Hugging Face (instructions are inside the notebook).
+              </li>
+              <li>
+                <strong className="text-zinc-200">Use on your PC:</strong> follow
+                “Option C — Ollama” in the last section of the notebook for a simple
+                chat app.
+              </li>
+            </ul>
+            <p className="text-xs text-zinc-500 pt-1">
+              You do not need to train again to use the model. Loading the saved
+              adapter is enough.
+            </p>
+          </div>
         </div>
       )}
 
